@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/music.css" />
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				text-decoration: none;
+			}
+			
+			.co {
+				color: aqua;
+			}
+			/*.s_list {
+				float: left;
+				padding-top: 60px;
+				width: 100px;
+				height: 200px;
+				background: pink;
+			}*/
+			
+			[v-cloak] {
+				display: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="box" v-cloak="">
+			<div style="height: 70px;background: antiquewhite;margin-bottom: 20px;">
+				<div style="float: left;line-height: 70px;margin-left: 200px;" v-for="(i,$index) in arr">
+					<a :href="i.path" @click="index=$index" :class="{co:index==$index}">
+						{{i.name}}
+					</a>
+
+				</div>
+			</div>
+
+			<div style="height:600px;margin-bottom: 20px;">
+				<router-view></router-view>
+			</div>
+
+			<div style="height: 60px;background:#ccc;position: fixed;width: 100%;">
+				<audio :src="url" autoplay controls style="margin-left: 650px"></audio>
+			</div>
+		</div>
+
+		<template id='no1'>
+			<div>
+				<kuang></kuang>
+			</div>
+		</template>
+
+		<template id='no2'>
+			<div>
+				<pai></pai>
+			</div>
+		</template>
+		<template id='no3'>
+			<div>
+
+			</div>
+		</template>
+		<template id='no4'>
+			<div>
+				<list></list>
+			</div>
+		</template>
+		<template id='no5'>
+			<div>
+				<h1 style="line-height: 50px;">播放</h1><br />
+				<div v-for="i in arr">
+					<p style="font-size: 30px;line-height: 70px;">歌曲名字:{{i}}</p>
+				</div>
+			</div>
+		</template>
+
+		<template id="no2_1">
+			<div>
+				<div v-for="item in pai_xiang">
+					<p style="height: 50px;line-height: 50px;border-bottom: 1px solid #ccc;text-align: center;">{{item.data.songname}}</p>
+				</div>
+
+			</div>
+		</template>
+
+		<!--歌手详情-->
+		<template id="no4_1">
+			<div>
+				<div v-for="item in singers">
+					<p style="height: 50px;line-height: 50px;border-bottom: 1px solid #ccc;text-align: center;">{{item.musicData.songname}}</p>
+
+				</div>
+			</div>
+		</template>
+
+		<template id="list">
+			<div>
+				<div v-for="i in singer_name" style="text-align: center;line-height: 30px;">
+					<a :href="'#/no4_1/'+i.Fsinger_mid">
+						<p style="height: 50px;border-bottom: 1px solid #ccc;line-height: 50px;">{{i.Fsinger_name}}</p>
+					</a>
+				</div>
+			</div>
+		</template>
+
+		<template id="kuang">
+			<div>
+				<div>
+					<div class="in_put">
+						<input type="text" placeholder="请输入歌名" v-model="value" @keyup.enter="sou" />
+					</div>
+					<div v-if="data_json">
+						<div style="width: 600px;margin: 0 auto;height: 100px;overflow: hidden;">
+							<span v-for="i in data_json" @click="keys(i.k)" style="float: left;margin-top:30px;padding-left: 20px;font-size: 14px;">
+								{{i.k}}
+					       	</span>
+						</div>
+					</div>
+					<div v-if="song_list" style="width: 500px;margin: 20px auto;height: 400px;overflow-y: scroll;">
+						<p v-for="i in song_list" style="line-height: 35px;" @click="song_play(i.songmid)" :class="i.songmid==songmid?'co':''">
+							<a :href="'#/no5/'+i.songmid+'/'+i.songname">{{i.songname}}</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<!--排行榜-->
+		<template id="pai">
+			<div>
+				<div style="width: 90%;margin: 0 auto;">
+					<div>
+						<h3 style="text-align: center;">QQ音乐</h3>
+						<div v-for="i in singer" style="width: 620px;height: 220px;margin-top: 10px;background: #f1f1f1;float: left;margin-left: 20px;">
+							<div style="float: left;">
+								<a :href="'#/no2_1/'+i.id"><img :src="i.picUrl" style="width: 230px;height: 220px;" /></a>
+							</div>
+							<div v-for="a in i.songList" class="s_list" style="padding-top: 20px;font-size: 12px;color: #666;">
+								<span style="display: inline-block;padding: 10px 22px;">{{a.singername}}</span>
+								<span>{{a.songname}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+		<!--排行榜详情-->
+
+	</body>
+	<script src="js/vue.js"></script>
+	<script src="js/vue-router.js"></script>
+	<script src="js/vue-resource.js"></script>
+	<script type="text/javascript">
+		//	  	歌手
+		Vue.component('list', {
+			template: '#list',
+			data() {
+				return {
+					singer_name: ''
+				}
+			},
+			created() {
+				this.$http.jsonp("https://c.y.qq.com/v8/fcg-bin/v8.fcg?channel=singer&page=list&key=all_all_all&pagesize=100&pagenum=1&g_tk=5381&jsonpCallback=callback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0", {
+					jsonpCallback: 'callback'
+				}).then((data) => {
+					console.log(data.data.data.list)
+					this.singer_name = data.data.data.list
+				})
+			}
+		})
+
+		//排行榜
+		Vue.component('pai', {
+			template: '#pai',
+			data() {
+				return {
+					singer: '',
+					singer_s: ''
+				}
+			},
+			methods: {
+				play(a) {
+					this.id = a
+					this.$http.jsonp("https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&tpl=3&page=detail&type=top&topid=4&_=1512563984096", {
+						jsonpCallback: 'callback'
+					}).then((data) => {
+						console.log(data.data.songlist)
+						this.singer_s = data.data.songlist
+					})
+				}
+			},
+			created() {
+				this.$http.jsonp("https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1512554796112", {
+					jsonpCallback: 'callback'
+				}).then((data) => {
+					//					console.log(data.data.data.topList)
+					this.singer = data.data.data.topList
+				})
+			}
+		})
+
+		//		搜索框
+		Vue.component('kuang', {
+			template: '#kuang',
+			data() {
+				return {
+					value: '',
+					data_json: '',
+					song_list: '',
+					songmid: '',
+					song_url: ''
+				}
+			},
+			methods: {
+				keys(a) {
+					this.value = a
+					this.sou()
+				},
+				sou() {
+					this.$http.jsonp("https://c.y.qq.com/soso/fcgi-bin/client_search_cp?g_tk=5381&p=1&n=20&w=" + this.value + "&format=jsonp&jsonpCallback=callback&loginUin=0&hostUin=0&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&remoteplace=txt.yqq.song&t=0&aggr=1&cr=1&catZhida=1&flag_qc=0", {
+						jsonpCallback: 'callback'
+					}).then((data) => {
+						this.song_list = data.data.data.song.list
+					}, (err) => {
+
+					})
+				},
+				song_play(a) {
+					this.songmid = a
+					this.$http.jsonp("https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?g_tk=1278911659&hostUin=0&format=jsonp&callback=callback&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&cid=205361747&uin=0&songmid=" + a + "&filename=C400" + a + ".m4a&guid=3655047200", {
+						jsonpCallback: 'callback'
+					}).then((data) => {
+						console.log(data.data.data.items[0])
+						var filename = data.data.data.items[0].filename
+						var vkey = data.data.data.items[0].vkey
+						this.song_url = `
+							 http://dl.stream.qqmusic.qq.com/${filename}?vkey=${vkey}&guid=3655047200&fromtag=66
+										`
+					}, (err) => {
+
+					})
+				}
+			},
+			created() {
+				this.$http.jsonp("https://c.y.qq.com/splcloud/fcgi-bin/gethotkey.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1513317614040", {
+					jsonpCallback: 'callback'
+				}).then((data) => {
+					this.data_json = data.data.data.hotkey
+				}, (err) => {
+
+				})
+			}
+
+		})
+
+		var router = new VueRouter({
+			routes: [{
+					path: '/',
+					component: {
+						template: '#no1'
+					}
+				},
+				{
+					path: '/no2',
+					component: {
+						template: '#no2'
+					}
+				},
+				{
+					path: '/no2_1/:id',
+					component: {
+						template: '#no2_1',
+						data() {
+							return {
+								id: "",
+								pai_xiang: ''
+							}
+						},
+						created() {
+							//								console.log(this.$route.params.id)
+							this.id = this.$route.params.id
+							this.$http.jsonp(`https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&tpl=3&page=detail&type=top&topid=${this.id}&_=1512563984096`, {
+								jsonpCallback: 'callback'
+							}).then((data) => {
+								//								console.log(data.data.songlist)
+								this.pai_xiang = data.data.songlist
+							}, (err) => {
+
+							})
+
+						},
+
+					}
+				},
+				{
+					path: '/no3',
+					component: {
+						template: '#no3'
+					}
+				},
+				{
+					path: '/no4',
+					component: {
+						template: '#no4'
+					}
+				},
+				{
+					path: '/no4_1/:Fsinger_mid',
+					component: {
+						template: '#no4_1',
+						data() {
+							return {
+								Fsinger_mid: '',
+								singers: ''
+							}
+						},
+						created() {
+							console.log(this.$route.params.Fsinger_mid)
+							this.Fsinger_mid = this.$route.params.Fsinger_mid
+							this.$http.jsonp(`https://c.y.qq.com/v8/fcg-bin/fcg_v8_singer_track_cp.fcg?g_tk=5381&jsonpCallback=callback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&singermid=${this.Fsinger_mid}&order=listen&begin=0&num=30&songstatus=1`, {
+								jsonpCallback: 'callback'
+							}).then((data) => {
+								console.log(data.data.data.list)
+								this.singers = data.data.data.list
+							}, (err) => {
+
+							})
+						}
+
+					}
+				},
+				{
+					path: '/no5/:songmid/:songname',
+					component: {
+						template: '#no5',
+						data() {
+							return {
+								songname: '',
+								name: '',
+								arr: [],
+								songmid: '',
+							}
+						},
+						created() {
+							if(this.$route.params.songmid) {
+								if(this.$route.params.songmid != 0 || this.$route.params.songname != 0) {
+									this.arr.push(this.$route.params.songname)
+								}
+							}
+						},
+						watch: {
+							'$route.params'(a) {
+								if(this.$route.params.songmid) {
+									if(this.$route.params.songmid != 0 || this.$route.params.songname != 0) {
+										this.arr.push(this.$route.params.songname)
+									}
+								}
+							}
+						}
+					},
+				}
+			]
+		})
+		new Vue({
+			el: '#box',
+			router,
+			data: {
+				url: '',
+				index: 0,
+				songname: '',
+				arr: [{
+						name: '首页',
+						path: '#/'
+					},
+					{
+						name: '排行榜',
+						path: '#/no2'
+					},
+					{
+						name: '歌单',
+						path: '#/no3'
+					},
+					{
+						name: '歌手',
+						path: '#/no4'
+					},
+					{
+						name: '播放列表',
+						path: '#/no5'
+					},
+				]
+			},
+
+			watch: {            
+				'$route.path' (a, b)  {                
+					var  id_s  =  a.substring(5,19);              
+					this.$http.jsonp("https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?g_tk=1278911659&hostUin=0&format=jsonp&callback=callback&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&cid=205361747&uin=0&songmid="  +  id_s  +  "&filename=C400"  +  id_s  +  ".m4a&guid=3655047200",   {                    
+						jsonpCallback:   'callback'                
+					}).then((data)  =>  {                    
+						var filename = data.data.data.items[0].filename
+						var vkey = data.data.data.items[0].vkey                    
+						this.url  = `http://dl.stream.qqmusic.qq.com/${filename}?vkey=${vkey}&guid=3655047200&fromtag=66`;                                 
+					},   (err)  =>  {
+
+					})
+				}            
+			}
+		})
+	</script>
+
+</html>

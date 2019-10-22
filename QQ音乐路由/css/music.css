@@ -1,0 +1,13 @@
+/*首页*/
+.in_put{
+	width: 700px;
+	height: 50px;
+	margin: 0 auto;
+}
+.in_put input{
+	width: 100%;
+	height: 50px;
+	text-indent: 2rem;
+	outline: none;
+}
+
